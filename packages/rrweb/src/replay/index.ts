@@ -1151,11 +1151,7 @@ export class Replayer {
           this.applyMutation(d, isSync);
         } catch (error) {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/restrict-template-expressions
-          this.warn(
-            `Exception in mutation ${error.message || error}`,
-            d,
-            timestamp,
-          );
+          this.warn(`Exception in mutation ${String(error)}`, d, timestamp);
         }
         break;
       }
@@ -1544,6 +1540,19 @@ export class Replayer {
           return this.newDocumentQueue.push(mutation);
         }
         return queue.push(mutation);
+      }
+
+      if (
+        mutation.node.type === NodeType.Document &&
+        parent?.nodeName?.toLowerCase() !== 'iframe' &&
+        parent?.nodeName?.toLowerCase() !== 'frame'
+      ) {
+        console.warn(
+          '[Replayer] Skipping invalid document append to a non-iframe parent. hi2',
+          mutation,
+          parent,
+        );
+        return;
       }
 
       if (mutation.node.isShadow) {
